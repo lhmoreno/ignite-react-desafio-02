@@ -11,6 +11,7 @@ export const HeaderContainer = styled.header`
     gap: 0.75rem;
 
     a {
+      position: relative;
       width: 2.375rem;
       height: 2.375rem;
 
@@ -31,6 +32,22 @@ export const HeaderContainer = styled.header`
       svg {
         width: 1.25rem;
         height: 1.25rem;
+      }
+
+      span {
+        width: 1.25rem;
+        height: 1.25rem;
+        background-color: ${(props) => props.theme['orange-600']};
+        color: ${(props) => props.theme['white']};
+        font-size: 0.75rem;
+        font-weight: 700;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: calc(0px - 0.5rem);
+        right: calc(0px - 0.5rem);
       }
     }
   }
