@@ -1,6 +1,7 @@
 import { ShoppingCart } from "phosphor-react"
 import { useState } from "react"
 import { InputNumber } from "../../../../components/InputNumber"
+import { useCart } from "../../../../hooks/useCart"
 import { priceOnlyFormatter } from "../../../../utils/formatter"
 import { 
   CartButton,
@@ -8,7 +9,7 @@ import {
 } from "./styles"
 
 export type CoffeeData = {
-  id: string
+  id: number
   imageUrl: string
   title: string
   description: string
@@ -18,14 +19,21 @@ export type CoffeeData = {
 
 type CoffeeProps = {
   coffee: CoffeeData
-  onAddCoffeeToCart: (coffeeId: string) => void
 }
 
-export function Coffee({ coffee, onAddCoffeeToCart }: CoffeeProps) {
-  const [amount, setAmount] = useState(1)
+export function Coffee({ coffee }: CoffeeProps) {
+  const [quantity, setQuantity] = useState(1)
+  const { addCoffeeInCart } = useCart()
 
-  function handleAddToCart() {
-    onAddCoffeeToCart(coffee.id)
+  function handleAddCoffeeInCart() {
+    addCoffeeInCart({
+      id: coffee.id,
+      title: coffee.title,
+      imageUrl: coffee.imageUrl,
+      price: coffee.price,
+      quantity
+    })
+    setQuantity(1)
   }
 
   return (
@@ -44,17 +52,19 @@ export function Coffee({ coffee, onAddCoffeeToCart }: CoffeeProps) {
         <span>R$ <strong>{priceOnlyFormatter.format(coffee.price)}</strong></span>
         <div>
           <InputNumber 
-            value={amount}
-            onSubtract={() => setAmount(value => {
+            value={quantity}
+            onSubtract={() => setQuantity(value => {
               if (value > 1) {
                 return value - 1
               } else {
                 return value
               }
             })}
-            onAdd={() => setAmount(value => value + 1)}
+            onAdd={() => setQuantity(value => value + 1)}
           />
-          <CartButton>
+          <CartButton
+            onClick={handleAddCoffeeInCart}
+          >
             <ShoppingCart weight="fill" />
           </CartButton>
         </div>

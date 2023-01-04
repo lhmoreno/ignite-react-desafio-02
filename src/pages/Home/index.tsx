@@ -67,7 +67,6 @@ export function Home() {
             <CoffeeComponent 
               key={coffee.id}
               coffee={coffee}
-              onAddCoffeeToCart={() => console.log(`Comprar o café: ${coffee.title}`)}
             />
           ))}
         </div>
