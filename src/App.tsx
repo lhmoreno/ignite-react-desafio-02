@@ -4,15 +4,23 @@ import { Router } from "./Router"
 
 import { GlobalStyle } from "./styles/global"
 import { defaultTheme } from "./styles/themes/default"
+import { CartProvider } from "./contexts/CartContext/Provider"
+import * as RadixToast from "@radix-ui/react-toast"
 
 function App() {
   return (
     <ThemeProvider theme={defaultTheme}>
-      <BrowserRouter>
-          <Router />
-      </BrowserRouter>
+      <RadixToast.Provider swipeDirection="left">
+        <BrowserRouter>
+          <CartProvider>
+            <Router />
+          </CartProvider>
+        </BrowserRouter>
 
-      <GlobalStyle />
+
+        <GlobalStyle />
+        <RadixToast.Viewport />
+      </RadixToast.Provider>
     </ThemeProvider>
   )
 }
