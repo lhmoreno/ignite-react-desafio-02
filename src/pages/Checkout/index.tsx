@@ -11,16 +11,17 @@ import { FormProvider, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useCart } from "../../hooks/useCart"
 import { CheckoutCoffee } from "./components/CheckoutCoffee"
+import { useEffect, useState } from "react"
 
 const userDeliveryFormSchema = z.object({
-  cep: z.string(),
+  cep: z.string().length(9),
   street: z.string(),
   number: z.number(),
-  complement: z.string().nullable(),
+  complement: z.string(),
   district: z.string(),
   city: z.string(),
   uf: z.string(),
-  payment: z.enum(['credit-card', 'debit-card', 'money']),
+  payment: z.enum(['credit-card', 'debit-card', 'money'])
 })
 
 type UserDeliveryFormInputs = z.infer<typeof userDeliveryFormSchema>
@@ -28,9 +29,11 @@ type UserDeliveryFormInputs = z.infer<typeof userDeliveryFormSchema>
 export function Checkout() {
   const { 
     coffees, 
+    deliveryInfo,
     removeCoffeeInCartById,
     handleAddCoffeeQuantity,
-    handleSubtractCoffeeQuantity 
+    handleSubtractCoffeeQuantity,
+    clearCart 
   } = useCart()
   const userDeliveryForm = useForm<UserDeliveryFormInputs>({
     resolver: zodResolver(userDeliveryFormSchema),
@@ -38,8 +41,12 @@ export function Checkout() {
       payment: 'credit-card'
     }
   })
-
-  const { handleSubmit, getValues } = userDeliveryForm
+  const [deliveryFee, setDeliveryFee] = useState(0)
+  const [succeesfulRequest, setSucceesfulRequest] = useState(false)
+  
+  const { handleSubmit, watch, setValue } = userDeliveryForm
+  const cep = watch('cep')
+  const coffeeListIsEmpty = coffees.length === 0
   
   const price = coffees.reduce((acc, coffee) => {
     acc.coffees += coffee.price * coffee.quantity
@@ -48,11 +55,37 @@ export function Checkout() {
     return acc
   }, {
     coffees: 0,
-    total: 3.7
+    total: deliveryFee
   })
 
-  function handleSubmitUserDeliveryForm(data: any) {
-    console.log(getValues())
+  useEffect(() => {
+    if (deliveryInfo) {
+      setValue('cep', deliveryInfo.cep)
+      setValue('street', deliveryInfo.street)
+      setValue('number', deliveryInfo.number)
+      setValue('complement', deliveryInfo.complement)
+      setValue('district', deliveryInfo.district)
+      setValue('city', deliveryInfo.city)
+      setValue('uf', deliveryInfo.uf)
+      setValue('payment', deliveryInfo.payment)
+    }
+  }, [deliveryInfo])
+
+  useEffect(() => {
+    if (cep?.length === 9) {
+      setDeliveryFee(Math.floor(Math.random() * 5))
+    }
+  }, [cep])
+
+  function handleSubmitUserDeliveryForm(data: UserDeliveryFormInputs) {
+    if (!coffeeListIsEmpty) {
+      setSucceesfulRequest(true)
+      clearCart(data)
+    }
+  }
+
+  if (succeesfulRequest) {
+    return <PageSuccess />
   }
 
   return (
@@ -60,7 +93,10 @@ export function Checkout() {
       <div>
         <h3>Complete seu pedido</h3>
 
-        <form onSubmit={handleSubmit(handleSubmitUserDeliveryForm)}>
+        <form 
+          id="form-delivery" 
+          onSubmit={handleSubmit(handleSubmitUserDeliveryForm)}
+        >
           <FormProvider {...userDeliveryForm}>
             <UserDeliveryForm />
           </FormProvider>
@@ -82,19 +118,38 @@ export function Checkout() {
           <Values>
             <div>
               <p>Total de itens</p>
-              <p>{priceFormatter.format(price.coffees)}</p>
+              <p>
+                {!coffeeListIsEmpty ? 
+                  priceFormatter.format(price.coffees)
+                  :
+                  'Nenhum café adicionado'
+                }
+              </p>
             </div>
             <div>
               <p>Entrega</p>
-              <p>R$ 3,70</p>
+              <p>
+                {!coffeeListIsEmpty ? 
+                  priceFormatter.format(deliveryFee)
+                  :
+                  'Nenhum café adicionado'
+                }
+              </p>
             </div>
             <div className="total">
               <p>Total</p>
-              <p>{priceFormatter.format(price.total)}</p>
+              <p>
+                {!coffeeListIsEmpty ? 
+                  priceFormatter.format(price.total)
+                  :
+                  'Nenhum café adicionado'
+                }
+              </p>
             </div>
           </Values>
           <button
-            onClick={handleSubmitUserDeliveryForm}
+            type="submit"
+            form="form-delivery"
           >
             Confirmar pedido
           </button>

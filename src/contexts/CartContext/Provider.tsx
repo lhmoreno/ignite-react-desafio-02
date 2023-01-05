@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from "react"
-import { CartCoffee, CartContext } from "."
+import { CartCoffee, CartContext, DeliveryInfo } from "."
 import { Toast, ToastData } from "../../components/Toast"
 import { coffeeDeliveryApi } from "../../lib/axios"
 
@@ -7,10 +7,18 @@ type CartProps = {
   children: ReactNode
 }
 
-let id: number | null = null
-
 export function CartProvider({ children }: CartProps) {
+  const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>()
   const [coffees, setCoffees] = useState<CartCoffee[]>([])
+  const [cartId, setCartId] = useState(() => {
+    const id = localStorage.getItem('@coffee-delivery:cartId-1.0.0')
+
+    if (id) {
+      return Number(id)
+    } else {
+      return null
+    }
+  })
   const [toast, setToast] = useState<ToastData>({
     title: '',
     description: ''
@@ -18,25 +26,23 @@ export function CartProvider({ children }: CartProps) {
 
   useEffect(() => {
     (async () => {
-      const storageId = localStorage.getItem('@coffee-delivery:cartId-1.0.0')
-      
-      if (!storageId) {
+      if (!cartId) {
         const { data } = await coffeeDeliveryApi.post('/carts', {
           coffees: []
         })
         const newCartId = data.id as number
-        id = newCartId
+        setCartId(newCartId)
         localStorage.setItem('@coffee-delivery:cartId-1.0.0', String(newCartId))
       } else {
-        id = Number(storageId)
-        const { data } = await coffeeDeliveryApi.get(`/carts/${id}`)
+        const { data } = await coffeeDeliveryApi.get(`/carts/${cartId}`)
         setCoffees(data.coffees)
+        setDeliveryInfo(data.deliveryInfo)
       }
     })()
   }, [])
 
   async function addCoffeeInCart(cartCoffee: CartCoffee) {
-    if (id) {
+    if (cartId) {
       const coffee = coffees.find(({ id }) => id === cartCoffee.id)
 
       if (!coffee) {
@@ -47,7 +53,7 @@ export function CartProvider({ children }: CartProps) {
           description: 'Muito bem! Este delicioso café agora está no carrinho ;)'
         })
         
-        await coffeeDeliveryApi.put(`/carts/${id}`, {
+        await coffeeDeliveryApi.put(`/carts/${cartId}`, {
           coffees: updatedCoffees
         })
       } else {
@@ -60,11 +66,11 @@ export function CartProvider({ children }: CartProps) {
   }
 
   async function removeCoffeeInCartById(coffeeId: number) {
-    if (id) {
+    if (cartId) {
       const updatedCoffees = coffees.filter(({ id }) => id !== coffeeId)
       setCoffees(updatedCoffees)
       
-      await coffeeDeliveryApi.put(`/carts/${id}`, {
+      await coffeeDeliveryApi.put(`/carts/${cartId}`, {
         coffees: updatedCoffees
       })
     }
@@ -89,11 +95,13 @@ export function CartProvider({ children }: CartProps) {
     }
   }
 
-  async function clearCart() {
-    if (id) {
+  async function clearCart(deliveryInfoData: DeliveryInfo) {
+    if (cartId) {
       setCoffees([])
+      setDeliveryInfo(deliveryInfoData)
 
-      await coffeeDeliveryApi.put(`/carts/${id}`, {
+      await coffeeDeliveryApi.put(`/carts/${cartId}`, {
+        deliveryInfo: deliveryInfoData,
         coffees: []
       })
     }
@@ -103,6 +111,7 @@ export function CartProvider({ children }: CartProps) {
     <CartContext.Provider
       value={{
         coffees,
+        deliveryInfo,
         addCoffeeInCart,
         removeCoffeeInCartById,
         handleAddCoffeeQuantity,
