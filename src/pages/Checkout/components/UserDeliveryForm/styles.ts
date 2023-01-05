@@ -38,42 +38,38 @@ export const FieldsetUserData = styled(Fieldset)`
   > div {
     float: left;
     width: 100%;
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 1rem 0.75rem;
-    grid-template-areas: 
-      "cep cep cep . . . . ."
-      "street street street street street street street street"
-      "number number number complement complement complement complement complement"
-      "district district district city city city city uf";
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  > div input {
+    width: 100%;
   }
 
   > div input[name='cep'] {
-    grid-area: cep;
-  }
-
-  > div input[name='street'] {
-    grid-area: street;
+    max-width: 12.5rem;
   }
 
   > div input[name='number'] {
-    grid-area: number;
+    max-width: 12.5rem;
   }
 
   > div input[name='complement'] {
-    grid-area: complement;
+    max-width: calc(100% - 12.5rem - 1rem);
   }
 
   > div input[name='district'] {
-    grid-area: district;
+    max-width: 12.5rem;
   }
 
   > div input[name='city'] {
-    grid-area: city;
+    max-width: 17.25rem;
   }
 
   > div input[name='uf'] {
-    grid-area: uf;
+    max-width: calc(100% - 12.5rem - 17.25rem - 2rem);
+    text-transform: uppercase;
   }
 `
 
