@@ -51,4 +51,16 @@ export const GlobalStyle = createGlobalStyle`
   ::placeholder {
     color: ${(props) => props.theme['brown-200']};
   }
+
+  /* Remover setas do input number: Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Remover setas do input number: Firefox */
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
 `
